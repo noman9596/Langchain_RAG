@@ -44,7 +44,7 @@ llm=HuggingFacePipeline.from_model_id(
     model_id="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
     task="text-generation",
     pipeline_kwargs={
-        "max_new_tokens":120,
+        "max_new_tokens":700,
         "temperature":0.3,
         "return_full_text": False
     }
@@ -82,10 +82,20 @@ def classify(x):
 level_select=RunnableLambda(classify)
 
 parallel=RunnableParallel(
-    {"notes":RunnableSequence(note,model,parser),
+    {"notes":note|model|parser,
     "quiz":quiz|model|parser,
-    "summary":summary|model|parser}
+    "summary":summary|model|parser,
+    "text": lambda x: x["text"],    
+    "level": lambda x: x["level"]}
 )
+
+
+# parallel = RunnablePassthrough().assign(
+#     notes = notes_prompt | model | parser,
+#     quiz = quiz_prompt | model | parser,
+#     summary = summary_prompt | model | parser
+# )
+
 branch=RunnableBranch(
     (lambda x:x["level"]=="easy",parallel),
     (lambda x:x["level"]=="medium",parallel),
