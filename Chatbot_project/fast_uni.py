@@ -11,9 +11,9 @@ from langchain_core.output_parsers import StrOutputParser
 from transformers import pipeline
 
 
-st.title("🎓 FAST University Chatbot (RAG)")
+st.title("FAST University Chatbot (RAG)")
 
-# 🔗 URLs
+#  URLs
 urls = [
     "https://pwr.nu.edu.pk/about/",
     "https://pwr.nu.edu.pk/campus-facilities/",
@@ -23,14 +23,14 @@ urls = [
     "https://pwr.nu.edu.pk/cs-faculty/"
 ]
 
-# 🧠 Embeddings (load once)
+#  Embeddings (load once)
 @st.cache_resource
 def get_embeddings():
     return HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
 
-# 🤖 LLM (load once)
+#  LLM (load once)
 @st.cache_resource
 def get_llm():
     pipe = pipeline(
@@ -40,20 +40,20 @@ def get_llm():
     )
     return HuggingFacePipeline(pipeline=pipe)
 
-# 📦 Create or Load Vector Store
+#  Create or Load Vector Store
 @st.cache_resource
 def get_vector_store():
     embeddings = get_embeddings()
 
     if os.path.exists("uni_index"):
-        st.info("⚡ Loading existing FAISS index...")
+        st.info("Loading existing FAISS index")
         return FAISS.load_local(
             "uni_index",
             embeddings,
             allow_dangerous_deserialization=True
         )
 
-    st.warning("⏳ First time setup: scraping website...")
+    st.warning("First time setup: scraping website")
 
     docs = []
     for url in urls:
@@ -64,7 +64,7 @@ def get_vector_store():
             )
             docs.extend(loader.load())
         except Exception as e:
-            print(f"❌ Failed: {url}")
+            print(f"Failed: {url}")
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=500,
@@ -82,7 +82,7 @@ def get_vector_store():
     return vector_store
 
 
-# 🔧 Build RAG Chain
+#  Build RAG Chain
 @st.cache_resource
 def get_rag_chain():
     vector_store = get_vector_store()
@@ -123,10 +123,10 @@ Answer (strictly from context, max 5 lines):
     return rag_chain
 
 
-# 🚀 Load system
+#  Load system
 rag_chain = get_rag_chain()
 
-# 💬 Chat UI
+# Chat UI
 query = st.text_input("Ask about FAST University:")
 
 if query:
